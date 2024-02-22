@@ -1,0 +1,30 @@
+name: migrationgroup2/migratetogithub
+on:
+  push:
+  workflow_dispatch:
+concurrency:
+  group: "${{ github.ref }}"
+  cancel-in-progress: true
+jobs:
+  pages:
+    runs-on: ubuntu-latest
+    container:
+      image: node:its
+    if: ${{ github.ref }} == $CI_DEFAULT_BRANCH
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4.1.0
+      with:
+        fetch-depth: 20
+        lfs: true
+    - run: npm
+    - run: run
+    - uses: actions/upload-artifact@v3.1.3
+      if: success()
+      with:
+        name: "${{ github.job }}"
+        path: public
+    - uses: JamesIves/github-pages-deploy-action@v4.5.0
+      with:
+        branch: gh-pages
+        folder: public
